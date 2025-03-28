@@ -10,7 +10,7 @@ UIListLayout.Parent = ScrollingFrame UIListLayout.SortOrder = Enum.SortOrder.Lay
 
 LogoButton.Name = "LogoButton" LogoButton.Parent = ScreenGui LogoButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255) LogoButton.Position = UDim2.new(0, 10, 0, 10) LogoButton.Size = UDim2.new(0, 50, 0, 50) LogoButton.Font = Enum.Font.SourceSansBold LogoButton.Text = "JKT" LogoButton.TextSize = 20 LogoButton.TextColor3 = Color3.fromRGB(0, 0, 0) LogoButton.Visible = false
 
-local isVisible = true local toggles = {Speed = false, Invisible = false, JumpPower = false, InfiniteJump = false, NoClip = false, AimLock = false, GodMode = false, AntiAFK = false, KillAura = false, ESP = false}
+local isVisible = true local toggles = {Speed = false, Invisible = false, JumpPower = false, InfiniteJump = false, NoClip = false, AimLock = false, GodMode = false, AntiAFK = false, KillAura = false, ESP = false} local aimLockTarget = nil local gravity = workspace.Gravity
 
 local function toggleGui() isVisible = not isVisible MainFrame.Visible = isVisible LogoButton.Visible = not isVisible end
 
@@ -28,13 +28,13 @@ game:GetService("UserInputService").JumpRequest:Connect(function() if toggles.In
 
 game:GetService("RunService").Stepped:Connect(function() if toggles.NoClip then for _, part in pairs(game.Players.LocalPlayer.Character:GetChildren()) do if part:IsA("BasePart") then part.CanCollide = false end end end end) createButton("NoClip", function(state) end)
 
-createButton("ESP", function(state) for _, player in pairs(game.Players:GetPlayers()) do if player ~= game.Players.LocalPlayer then if state then local highlight = Instance.new("Highlight") highlight.Parent = player.Character highlight.FillColor = Color3.fromRGB(255, 0, 0) highlight.OutlineColor = Color3.fromRGB(255, 255, 255) highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop highlight.Adornee = player.Character else for _, highlight in pairs(player.Character:GetChildren()) do if highlight:IsA("Highlight") then highlight:Destroy() end end end end end end)
+createButton("Aim Lock", function(state) if state then aimLockTarget = game.Players:GetPlayers()[2] workspace.Gravity = 0 else aimLockTarget = nil workspace.Gravity = gravity end end)
+
+game:GetService("RunService").Stepped:Connect(function() if aimLockTarget and aimLockTarget.Character and aimLockTarget.Character:FindFirstChild("HumanoidRootPart") then game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = aimLockTarget.Character.HumanoidRootPart.CFrame end end)
 
 local function refreshTeleportButtons() for _, child in pairs(ScrollingFrame:GetChildren()) do if child:IsA("TextButton") and string.find(child.Text, "Teleport ke") then child:Destroy() end end for _, player in pairs(game.Players:GetPlayers()) do if player ~= game.Players.LocalPlayer then createButton("Teleport ke " .. player.Name, function() if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame end end) end end end
 
-game.Players.PlayerAdded:Connect(function() wait(0.5) refreshTeleportButtons() end)
-
-game.Players.PlayerRemoving:Connect(function() wait(0.5) refreshTeleportButtons() end)
+game.Players.PlayerAdded:Connect(refreshTeleportButtons) game.Players.PlayerRemoving:Connect(refreshTeleportButtons)
 
 refreshTeleportButtons() LogoButton.MouseButton1Click:Connect(toggleGui)
 
