@@ -1,5 +1,6 @@
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
+local ScrollingFrame = Instance.new("ScrollingFrame")
 local UIListLayout = Instance.new("UIListLayout")
 local LogoButton = Instance.new("ImageButton")
 
@@ -14,7 +15,15 @@ MainFrame.Position = UDim2.new(0.5, -125, 0.5, -150)
 MainFrame.Active = true
 MainFrame.Draggable = true
 
-UIListLayout.Parent = MainFrame
+-- 🔥 Scrolling Frame
+ScrollingFrame.Parent = MainFrame
+ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+ScrollingFrame.ScrollBarThickness = 8
+ScrollingFrame.BackgroundTransparency = 1
+ScrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+UIListLayout.Parent = ScrollingFrame
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 5)
 
@@ -23,7 +32,7 @@ LogoButton.Parent = ScreenGui
 LogoButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 LogoButton.Position = UDim2.new(0, 10, 0, 10)
 LogoButton.Size = UDim2.new(0, 50, 0, 50)
-LogoButton.Image = "rbxassetid://6680749747" -- Logo Skull
+LogoButton.Image = "rbxassetid://6680749747"
 LogoButton.Visible = false
 
 local isVisible = true
@@ -47,7 +56,7 @@ end
 
 local function createButton(name, callback)
     local Button = Instance.new("TextButton")
-    Button.Parent = MainFrame
+    Button.Parent = ScrollingFrame
     Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     Button.Size = UDim2.new(1, 0, 0, 30)
     Button.Font = Enum.Font.SourceSans
@@ -60,6 +69,18 @@ local function createButton(name, callback)
         callback(toggles[name])
     end)
 end
+
+-- ❌ Tombol Tutup (di pojok atas kanan)
+local CloseButton = Instance.new("TextButton")
+CloseButton.Parent = MainFrame
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -35, 0, -35)
+CloseButton.Font = Enum.Font.SourceSansBold
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 20
+CloseButton.MouseButton1Click:Connect(toggleGui)
 
 -- 🔥 Super Speed
 createButton("Super Speed", function(state)
@@ -147,17 +168,5 @@ end)
 createButton("NoClip", function(state)
     toggles.NoClip = state
 end)
-
--- ❌ Tombol Tutup
-local CloseButton = Instance.new("TextButton")
-CloseButton.Parent = MainFrame
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -30, 0, 0)
-CloseButton.Font = Enum.Font.SourceSansBold
-CloseButton.Text = "X"
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.TextSize = 20
-CloseButton.MouseButton1Click:Connect(toggleGui)
 
 LogoButton.MouseButton1Click:Connect(toggleGui)
