@@ -4,10 +4,6 @@ local ScrollingFrame = Instance.new("ScrollingFrame")
 local UIListLayout = Instance.new("UIListLayout")
 local LogoButton = Instance.new("TextButton")
 
-local HttpService = game:GetService("HttpService")
-local TeleportService = game:GetService("TeleportService")
-local PlaceId = game.PlaceId
-
 ScreenGui.Name = "JakartaScript"
 ScreenGui.Parent = game.CoreGui
 
@@ -42,6 +38,13 @@ LogoButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 LogoButton.Visible = false
 
 local isVisible = true
+local toggles = {
+    Speed = false,
+    Invisible = false,
+    JumpPower = false,
+    InfiniteJump = false,
+    NoClip = false
+}
 
 local function toggleGui()
     isVisible = not isVisible
@@ -55,10 +58,14 @@ local function createButton(name, callback)
     Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     Button.Size = UDim2.new(1, 0, 0, 30)
     Button.Font = Enum.Font.SourceSans
-    Button.Text = name
+    Button.Text = name .. " [OFF]"
     Button.TextColor3 = Color3.fromRGB(255, 255, 255)
     Button.TextSize = 20
-    Button.MouseButton1Click:Connect(callback)
+    Button.MouseButton1Click:Connect(function()
+        toggles[name] = not toggles[name]
+        Button.Text = name .. (toggles[name] and " [ON]" or " [OFF]")
+        callback(toggles[name])
+    end)
 end
 
 local CloseButton = Instance.new("TextButton")
@@ -72,39 +79,53 @@ CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseButton.TextSize = 20
 CloseButton.MouseButton1Click:Connect(toggleGui)
 
--- 🔥 Server Hub dengan daftar pemain
-local function createServerHub()
-    local servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Desc&limit=100")).data
-    
-    for _, server in pairs(servers) do
-        if server.id ~= game.JobId and server.playing < server.maxPlayers then
-            local serverInfo = "Join Server (" .. server.playing .. "/" .. server.maxPlayers .. ")"
-            
-            -- 🔎 Ambil daftar pemain di server
-            local playerList = ""
-            for _, player in pairs(server.playerIds or {}) do
-                local success, name = pcall(function()
-                    return game.Players:GetNameFromUserIdAsync(player)
-                end)
-                if success and name then
-                    playerList = playerList .. name .. ", "
-                end
+-- 🚀 Speed
+createButton("Super Speed", function(state)
+    local player = game.Players.LocalPlayer
+    player.Character.Humanoid.WalkSpeed = state and 500 or 16
+end)
+
+-- 😎 Invisible
+createButton("Invisible", function(state)
+    local player = game.Players.LocalPlayer
+    for _, part in pairs(player.Character:GetChildren()) do
+        if part:IsA("BasePart") then
+            part.Transparency = state and 1 or 0
+            if part:FindFirstChild("face") then
+                part.face.Transparency = state and 1 or 0
             end
-            
-            if #playerList > 0 then
-                playerList = playerList:sub(1, -3) -- Buang koma terakhir
-                serverInfo = serverInfo .. "\n[" .. playerList .. "]"
-            end
-            
-            createButton(serverInfo, function()
-                TeleportService:TeleportToPlaceInstance(PlaceId, server.id, game.Players.LocalPlayer)
-            end)
         end
     end
-end
+end)
 
-createButton("Server Hub", function()
-    createServerHub()
+-- 🔥 Jump Power
+createButton("Jump Power", function(state)
+    local player = game.Players.LocalPlayer
+    player.Character.Humanoid.JumpPower = state and 150 or 50
+end)
+
+-- 😆 Infinite Jump
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if toggles.InfiniteJump then
+        game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+createButton("Infinite Jump", function(state)
+    toggles.InfiniteJump = state
+end)
+
+-- 😎 NoClip
+game:GetService("RunService").Stepped:Connect(function()
+    if toggles.NoClip then
+        for _, part in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+            if part:IsA("BasePart") and part.CanCollide == true then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+createButton("NoClip", function(state)
+    toggles.NoClip = state
 end)
 
 LogoButton.MouseButton1Click:Connect(toggleGui)
