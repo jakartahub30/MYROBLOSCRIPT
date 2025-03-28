@@ -79,13 +79,11 @@ CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseButton.TextSize = 20
 CloseButton.MouseButton1Click:Connect(toggleGui)
 
--- 🚀 Speed
 createButton("Super Speed", function(state)
     local player = game.Players.LocalPlayer
     player.Character.Humanoid.WalkSpeed = state and 500 or 16
 end)
 
--- 😎 Invisible
 createButton("Invisible", function(state)
     local player = game.Players.LocalPlayer
     for _, part in pairs(player.Character:GetChildren()) do
@@ -98,13 +96,11 @@ createButton("Invisible", function(state)
     end
 end)
 
--- 🔥 Jump Power
 createButton("Jump Power", function(state)
     local player = game.Players.LocalPlayer
     player.Character.Humanoid.JumpPower = state and 150 or 50
 end)
 
--- 😆 Infinite Jump
 game:GetService("UserInputService").JumpRequest:Connect(function()
     if toggles.InfiniteJump then
         game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
@@ -114,7 +110,6 @@ createButton("Infinite Jump", function(state)
     toggles.InfiniteJump = state
 end)
 
--- 😎 NoClip
 game:GetService("RunService").Stepped:Connect(function()
     if toggles.NoClip then
         for _, part in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
