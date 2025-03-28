@@ -44,7 +44,10 @@ local toggles = {
     JumpPower = false,
     InfiniteJump = false,
     NoClip = false,
-    Teleport = false
+    AimLock = false,
+    GodMode = false,
+    AntiAFK = false,
+    KillAura = false
 }
 
 local function toggleGui()
@@ -80,13 +83,11 @@ CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseButton.TextSize = 20
 CloseButton.MouseButton1Click:Connect(toggleGui)
 
--- ✅ Super Speed
 createButton("Super Speed", function(state)
     local player = game.Players.LocalPlayer
     player.Character.Humanoid.WalkSpeed = state and 500 or 16
 end)
 
--- ✅ Invisible
 createButton("Invisible", function(state)
     local player = game.Players.LocalPlayer
     for _, part in pairs(player.Character:GetChildren()) do
@@ -99,60 +100,109 @@ createButton("Invisible", function(state)
     end
 end)
 
--- ✅ Jump Power
 createButton("Jump Power", function(state)
     local player = game.Players.LocalPlayer
     player.Character.Humanoid.JumpPower = state and 150 or 50
 end)
 
--- ✅ Infinite Jump
 game:GetService("UserInputService").JumpRequest:Connect(function()
     if toggles.InfiniteJump then
         game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end)
-createButton("Infinite Jump", function(state)
-    toggles.InfiniteJump = state
-end)
+createButton("Infinite Jump", function(state) end)
 
--- ✅ NoClip
 game:GetService("RunService").Stepped:Connect(function()
     if toggles.NoClip then
         for _, part in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
-            if part:IsA("BasePart") and part.CanCollide == true then
+            if part:IsA("BasePart") then
                 part.CanCollide = false
             end
         end
     end
 end)
-createButton("NoClip", function(state)
-    toggles.NoClip = state
+createButton("NoClip", function(state) end)
+
+createButton("Aim Lock", function(state)
+    if state then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players:GetPlayers()[2].Character.HumanoidRootPart.CFrame
+    end
 end)
 
--- ✅ Teleport ke pemain lain
-local function createTeleportButtons()
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-            createButton("Teleport ke " .. player.Name, function()
-                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
-            end)
+createButton("God Mode", function(state)
+    game.Players.LocalPlayer.Character.Humanoid.MaxHealth = state and math.huge or 100
+end)
+
+createButton("Anti AFK", function(state)
+    if state then
+        game:GetService("Players").LocalPlayer.Idled:Connect(function()
+            game.VirtualUser:CaptureController()
+            game.VirtualUser:ClickButton2(Vector2.new())
+        end)
+    end
+end)
+
+game:GetService("RunService").Stepped:Connect(function()
+    if toggles.KillAura then
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid.Health = 0
+            end
         end
+    end
+end)
+createButton("Kill Aura", function(state) end)
+
+for _, player in pairs(game.Players:GetPlayers()) do
+    if player ~= game.Players.LocalPlayer then
+        createButton("Teleport ke " .. player.Name, function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
+        end)
     end
 end
 
-createTeleportButtons()
+local function createESP(player)
+    local function createESPPart()
+        local character = player.Character
+        if not character or not character:FindFirstChild("Head") then return end
+
+        local esp = Instance.new("BillboardGui")
+        esp.Adornee = character.Head
+        esp.Parent = character.Head
+        esp.Size = UDim2.new(0, 100, 0, 50)
+        esp.StudsOffset = Vector3.new(0, 2, 0)
+        esp.AlwaysOnTop = true
+
+        local label = Instance.new("TextLabel")
+        label.Parent = esp
+        label.BackgroundTransparency = 1
+        label.Text = player.Name
+        label.TextSize = 20
+        label.TextColor3 = Color3.fromRGB(255, 255, 255)
+        label.TextStrokeTransparency = 0.5
+        label.TextAlign = Enum.TextXAlignment.Center
+        label.TextYAlignment = Enum.TextYAlignment.Top
+    end
+
+    player.CharacterAdded:Connect(function()
+        createESPPart()
+    end)
+
+    if player.Character then
+        createESPPart()
+    end
+end
+
+for _, player in pairs(game.Players:GetPlayers()) do
+    if player ~= game.Players.LocalPlayer then
+        createESP(player)
+    end
+end
+
+game.Players.PlayerAdded:Connect(function(player)
+    if player ~= game.Players.LocalPlayer then
+        createESP(player)
+    end
+end)
 
 LogoButton.MouseButton1Click:Connect(toggleGui)
-
-game.Players.PlayerAdded:Connect(function()
-    createTeleportButtons()
-end)
-
-game.Players.PlayerRemoving:Connect(function()
-    for _, button in pairs(ScrollingFrame:GetChildren()) do
-        if button:IsA("TextButton") and string.find(button.Text, "Teleport ke") then
-            button:Destroy()
-        end
-    end
-    createTeleportButtons()
-end)
