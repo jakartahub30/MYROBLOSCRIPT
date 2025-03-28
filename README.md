@@ -36,6 +36,7 @@ LogoButton.Text = "JKT"
 LogoButton.TextSize = 20
 LogoButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 LogoButton.Visible = false
+LogoButton.ZIndex = 10
 
 local isVisible = true
 local toggles = {
@@ -54,6 +55,13 @@ local function toggleGui()
     isVisible = not isVisible
     MainFrame.Visible = isVisible
     LogoButton.Visible = not isVisible
+    
+    if not isVisible then
+        LogoButton.Active = true
+        LogoButton.ZIndex = 10
+    else
+        LogoButton.Active = false
+    end
 end
 
 local function createButton(name, callback)
@@ -123,12 +131,6 @@ game:GetService("RunService").Stepped:Connect(function()
 end)
 createButton("NoClip", function(state) end)
 
-createButton("Aim Lock", function(state)
-    if state then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players:GetPlayers()[2].Character.HumanoidRootPart.CFrame
-    end
-end)
-
 createButton("God Mode", function(state)
     game.Players.LocalPlayer.Character.Humanoid.MaxHealth = state and math.huge or 100
 end)
@@ -153,44 +155,29 @@ game:GetService("RunService").Stepped:Connect(function()
 end)
 createButton("Kill Aura", function(state) end)
 
-for _, player in pairs(game.Players:GetPlayers()) do
-    if player ~= game.Players.LocalPlayer then
-        createButton("Teleport ke " .. player.Name, function()
-            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
-        end)
-    end
-end
-
 local function createESP(player)
     local function createESPPart()
-        local character = player.Character
-        if not character or not character:FindFirstChild("Head") then return end
+        if player.Character and player.Character:FindFirstChild("Head") then
+            local esp = Instance.new("BillboardGui")
+            esp.Adornee = player.Character.Head
+            esp.Size = UDim2.new(0, 100, 0, 50)
+            esp.StudsOffset = Vector3.new(0, 2, 0)
+            esp.AlwaysOnTop = true
+            esp.Parent = player.Character.Head
 
-        local esp = Instance.new("BillboardGui")
-        esp.Adornee = character.Head
-        esp.Parent = character.Head
-        esp.Size = UDim2.new(0, 100, 0, 50)
-        esp.StudsOffset = Vector3.new(0, 2, 0)
-        esp.AlwaysOnTop = true
-
-        local label = Instance.new("TextLabel")
-        label.Parent = esp
-        label.BackgroundTransparency = 1
-        label.Text = player.Name
-        label.TextSize = 20
-        label.TextColor3 = Color3.fromRGB(255, 255, 255)
-        label.TextStrokeTransparency = 0.5
-        label.TextAlign = Enum.TextXAlignment.Center
-        label.TextYAlignment = Enum.TextYAlignment.Top
+            local label = Instance.new("TextLabel")
+            label.Parent = esp
+            label.Size = UDim2.new(1, 0, 1, 0)
+            label.BackgroundTransparency = 1
+            label.Text = player.Name
+            label.TextColor3 = Color3.fromRGB(255, 0, 0)
+            label.TextSize = 20
+            label.TextStrokeTransparency = 0.5
+        end
     end
 
-    player.CharacterAdded:Connect(function()
-        createESPPart()
-    end)
-
-    if player.Character then
-        createESPPart()
-    end
+    player.CharacterAdded:Connect(createESPPart)
+    if player.Character then createESPPart() end
 end
 
 for _, player in pairs(game.Players:GetPlayers()) do
