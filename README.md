@@ -8,7 +8,7 @@ BarFrame.Parent = MainFrame BarFrame.Size = UDim2.new(1, 0, 0, 30) BarFrame.Back
 
 ScriptName.Parent = BarFrame ScriptName.Size = UDim2.new(0.6, 0, 1, 0) ScriptName.Position = UDim2.new(0, 5, 0, 0) ScriptName.Text = "JAKARTA HUB" ScriptName.TextColor3 = Color3.fromRGB(255, 255, 255) ScriptName.TextSize = 20 ScriptName.Font = Enum.Font.SourceSansBold ScriptName.BackgroundTransparency = 1
 
-Username.Parent = BarFrame Username.Size = UDim2.new(0.4, 0, 1, 0) Username.Position = UDim2.new(0.6, -5, 0, 0) Username.Text = "RIP_KIMPOS" Username.TextColor3 = Color3.fromRGB(255, 255, 255) Username.TextSize = 20 Username.Font = Enum.Font.SourceSansBold Username.BackgroundTransparency = 1
+Username.Parent = BarFrame Username.Size = UDim2.new(0.4, 0, 1, 0) Username.Position = UDim2.new(0.6, -5, 0, 0) Username.Text = "RIP_KOMPOS" Username.TextColor3 = Color3.fromRGB(255, 255, 255) Username.TextSize = 20 Username.Font = Enum.Font.SourceSansBold Username.BackgroundTransparency = 1
 
 ScrollingFrame.Parent = MainFrame ScrollingFrame.Position = UDim2.new(0, 0, 0, 30) ScrollingFrame.Size = UDim2.new(1, 0, 1, -30) ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0) ScrollingFrame.ScrollBarThickness = 8 ScrollingFrame.BackgroundTransparency = 1 ScrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
