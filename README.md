@@ -1,22 +1,47 @@
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
+local BarFrame = Instance.new("Frame")
+local ScriptName = Instance.new("TextLabel")
+local Username = Instance.new("TextLabel")
 local ScrollingFrame = Instance.new("ScrollingFrame")
 local UIListLayout = Instance.new("UIListLayout")
 local LogoButton = Instance.new("TextButton")
 
-ScreenGui.Name = "JakartaScript"
+ScreenGui.Name = "JakartaHub"
 ScreenGui.Parent = game.CoreGui
 
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-MainFrame.Size = UDim2.new(0, 250, 0, 300)
-MainFrame.Position = UDim2.new(0.5, -125, 0.5, -150)
+MainFrame.Size = UDim2.new(0, 250, 0, 350)
+MainFrame.Position = UDim2.new(0.5, -125, 0.5, -175)
 MainFrame.Active = true
 MainFrame.Draggable = true
 
+BarFrame.Parent = MainFrame
+BarFrame.Size = UDim2.new(1, 0, 0, 30)
+BarFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+
+ScriptName.Parent = BarFrame
+ScriptName.Size = UDim2.new(0.7, 0, 1, 0)
+ScriptName.Text = "JAKARTA HUB"
+ScriptName.TextColor3 = Color3.fromRGB(255, 255, 255)
+ScriptName.TextSize = 20
+ScriptName.Font = Enum.Font.SourceSansBold
+ScriptName.BackgroundTransparency = 1
+
+Username.Parent = BarFrame
+Username.Size = UDim2.new(0.3, 0, 1, 0)
+Username.Position = UDim2.new(0.7, 0, 0, 0)
+Username.Text = "RIP_KIMPOS"
+Username.TextColor3 = Color3.fromRGB(255, 255, 255)
+Username.TextSize = 20
+Username.Font = Enum.Font.SourceSansBold
+Username.BackgroundTransparency = 1
+
 ScrollingFrame.Parent = MainFrame
-ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
+ScrollingFrame.Position = UDim2.new(0, 0, 0, 30)
+ScrollingFrame.Size = UDim2.new(1, 0, 1, -30)
 ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 ScrollingFrame.ScrollBarThickness = 8
 ScrollingFrame.BackgroundTransparency = 1
@@ -95,9 +120,6 @@ createButton("Invisible", function(state)
     for _, part in pairs(player.Character:GetChildren()) do
         if part:IsA("BasePart") then
             part.Transparency = state and 1 or 0
-            if part:FindFirstChild("face") then
-                part.face.Transparency = state and 1 or 0
-            end
         end
     end
 end)
@@ -127,8 +149,19 @@ createButton("NoClip", function(state) end)
 
 createButton("Aim Lock", function(state)
     if state then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players:GetPlayers()[2].Character.HumanoidRootPart.CFrame
+        local target = game.Players:GetPlayers()[2]
+        if target and target.Character then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame
+        end
     end
+end)
+
+createButton("Gravity", function(state)
+    game.Workspace.Gravity = state and 0 or 196.2
+end)
+
+createButton("ESP", function(state)
+    -- Kode ESP (disesuaikan)
 end)
 
 createButton("God Mode", function(state)
@@ -144,46 +177,14 @@ createButton("Anti AFK", function(state)
     end
 end)
 
-game:GetService("RunService").Stepped:Connect(function()
-    if toggles.KillAura then
+createButton("Kill Aura", function(state)
+    if state then
         for _, player in pairs(game.Players:GetPlayers()) do
             if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
                 player.Character.Humanoid.Health = 0
             end
         end
     end
-end)
-createButton("Kill Aura", function(state) end)
-
-for _, player in pairs(game.Players:GetPlayers()) do
-    if player ~= game.Players.LocalPlayer then
-        createButton("Teleport ke " .. player.Name, function()
-            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
-        end)
-    end
-end
-
-createButton("ESP", function(state)
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer and player.Character then
-            if state then
-                local highlight = Instance.new("Highlight", player.Character)
-                highlight.FillColor = Color3.fromRGB(255, 0, 0)
-                highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-            else
-                for _, v in pairs(player.Character:GetChildren()) do
-                    if v:IsA("Highlight") then
-                        v:Destroy()
-                    end
-                end
-            end
-        end
-    end
-end)
-
-createButton("Gravity", function(state)
-    local player = game.Players.LocalPlayer
-    workspace.Gravity = state and 50 or 196.2
 end)
 
 LogoButton.MouseButton1Click:Connect(toggleGui)
