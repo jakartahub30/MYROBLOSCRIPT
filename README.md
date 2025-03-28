@@ -52,7 +52,6 @@ local toggles = {
 }
 
 local ESPObjects = {}
-local connections = {}
 
 local function toggleGui()
     isVisible = not isVisible
@@ -110,62 +109,47 @@ createButton("Jump Power", function(state)
     player.Character.Humanoid.JumpPower = state and 150 or 50
 end)
 
-local infiniteJumpConnection
-createButton("Infinite Jump", function(state)
-    if state then
-        infiniteJumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
-            game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-        end)
-    elseif infiniteJumpConnection then
-        infiniteJumpConnection:Disconnect()
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if toggles.InfiniteJump then
+        game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end)
+createButton("Infinite Jump", function(state) end)
 
-local noClipConnection
-createButton("NoClip", function(state)
-    if state then
-        noClipConnection = game:GetService("RunService").Stepped:Connect(function()
-            for _, part in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
+game:GetService("RunService").Stepped:Connect(function()
+    if toggles.NoClip then
+        for _, part in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
             end
-        end)
-    elseif noClipConnection then
-        noClipConnection:Disconnect()
+        end
     end
 end)
+createButton("NoClip", function(state) end)
 
 createButton("God Mode", function(state)
     game.Players.LocalPlayer.Character.Humanoid.MaxHealth = state and math.huge or 100
 end)
 
-local antiAFKConnection
 createButton("Anti AFK", function(state)
     if state then
-        antiAFKConnection = game:GetService("Players").LocalPlayer.Idled:Connect(function()
+        game:GetService("Players").LocalPlayer.Idled:Connect(function()
             game.VirtualUser:CaptureController()
             game.VirtualUser:ClickButton2(Vector2.new())
         end)
-    elseif antiAFKConnection then
-        antiAFKConnection:Disconnect()
     end
 end)
 
-local killAuraConnection
-createButton("Kill Aura", function(state)
-    if state then
-        killAuraConnection = game:GetService("RunService").Stepped:Connect(function()
-            for _, player in pairs(game.Players:GetPlayers()) do
-                if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
-                    player.Character.Humanoid.Health = 0
-                end
+game:GetService("RunService").Stepped:Connect(function()
+    if toggles.KillAura then
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid.Health = 0
             end
-        end)
-    elseif killAuraConnection then
-        killAuraConnection:Disconnect()
+        end
     end
 end)
+createButton("Kill Aura", function(state) end)
 
 local function createESP(player)
     if toggles.ESP and player ~= game.Players.LocalPlayer then
