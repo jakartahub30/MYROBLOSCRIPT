@@ -47,20 +47,18 @@ local toggles = {
     NoClip = false,
     GodMode = false,
     AntiAFK = false,
-    KillAura = false
+    KillAura = false,
+    ESP = false
 }
+
+local ESPObjects = {}
+local connections = {}
 
 local function toggleGui()
     isVisible = not isVisible
     MainFrame.Visible = isVisible
     LogoButton.Visible = not isVisible
-    
-    if not isVisible then
-        LogoButton.Active = true
-        LogoButton.ZIndex = 10
-    else
-        LogoButton.Active = false
-    end
+    LogoButton.Active = not isVisible
 end
 
 local function createButton(name, callback)
@@ -112,55 +110,70 @@ createButton("Jump Power", function(state)
     player.Character.Humanoid.JumpPower = state and 150 or 50
 end)
 
-game:GetService("UserInputService").JumpRequest:Connect(function()
-    if toggles.InfiniteJump then
-        game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+local infiniteJumpConnection
+createButton("Infinite Jump", function(state)
+    if state then
+        infiniteJumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
+            game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end)
+    elseif infiniteJumpConnection then
+        infiniteJumpConnection:Disconnect()
     end
 end)
-createButton("Infinite Jump", function(state) end)
 
-game:GetService("RunService").Stepped:Connect(function()
-    if toggles.NoClip then
-        for _, part in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
+local noClipConnection
+createButton("NoClip", function(state)
+    if state then
+        noClipConnection = game:GetService("RunService").Stepped:Connect(function()
+            for _, part in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
             end
-        end
+        end)
+    elseif noClipConnection then
+        noClipConnection:Disconnect()
     end
 end)
-createButton("NoClip", function(state) end)
 
 createButton("God Mode", function(state)
     game.Players.LocalPlayer.Character.Humanoid.MaxHealth = state and math.huge or 100
 end)
 
+local antiAFKConnection
 createButton("Anti AFK", function(state)
     if state then
-        game:GetService("Players").LocalPlayer.Idled:Connect(function()
+        antiAFKConnection = game:GetService("Players").LocalPlayer.Idled:Connect(function()
             game.VirtualUser:CaptureController()
             game.VirtualUser:ClickButton2(Vector2.new())
         end)
+    elseif antiAFKConnection then
+        antiAFKConnection:Disconnect()
     end
 end)
 
-game:GetService("RunService").Stepped:Connect(function()
-    if toggles.KillAura then
-        for _, player in pairs(game.Players:GetPlayers()) do
-            if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
-                player.Character.Humanoid.Health = 0
+local killAuraConnection
+createButton("Kill Aura", function(state)
+    if state then
+        killAuraConnection = game:GetService("RunService").Stepped:Connect(function()
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
+                    player.Character.Humanoid.Health = 0
+                end
             end
-        end
+        end)
+    elseif killAuraConnection then
+        killAuraConnection:Disconnect()
     end
 end)
-createButton("Kill Aura", function(state) end)
 
 local function createESP(player)
-    local function createESPPart()
+    if toggles.ESP and player ~= game.Players.LocalPlayer then
         if player.Character and player.Character:FindFirstChild("Head") then
             local esp = Instance.new("BillboardGui")
             esp.Adornee = player.Character.Head
-            esp.Size = UDim2.new(0, 50, 0, 20) -- Ukuran ESP dikecilin
-            esp.StudsOffset = Vector3.new(0, 1.5, 0) -- Posisinya lebih pas
+            esp.Size = UDim2.new(0, 50, 0, 20)
+            esp.StudsOffset = Vector3.new(0, 1.5, 0)
             esp.AlwaysOnTop = true
             esp.Parent = player.Character.Head
 
@@ -173,23 +186,29 @@ local function createESP(player)
             label.TextSize = 14
             label.TextStrokeTransparency = 0.5
             label.TextScaled = true
+            
+            table.insert(ESPObjects, esp)
         end
     end
-
-    player.CharacterAdded:Connect(createESPPart)
-    if player.Character then createESPPart() end
 end
 
-for _, player in pairs(game.Players:GetPlayers()) do
-    if player ~= game.Players.LocalPlayer then
-        createESP(player)
+createButton("ESP", function(state)
+    for _, esp in pairs(ESPObjects) do
+        esp:Destroy()
     end
-end
-
-game.Players.PlayerAdded:Connect(function(player)
-    if player ~= game.Players.LocalPlayer then
-        createESP(player)
+    ESPObjects = {}
+    
+    if state then
+        for _, player in pairs(game.Players:GetPlayers()) do
+            createESP(player)
+        end
     end
 end)
+
+for _, player in pairs(game.Players:GetPlayers()) do
+    createESP(player)
+end
+
+game.Players.PlayerAdded:Connect(createESP)
 
 LogoButton.MouseButton1Click:Connect(toggleGui)
