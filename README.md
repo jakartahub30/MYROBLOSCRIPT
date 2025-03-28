@@ -45,7 +45,6 @@ local toggles = {
     JumpPower = false,
     InfiniteJump = false,
     NoClip = false,
-    AimLock = false,
     GodMode = false,
     AntiAFK = false,
     KillAura = false
@@ -160,8 +159,8 @@ local function createESP(player)
         if player.Character and player.Character:FindFirstChild("Head") then
             local esp = Instance.new("BillboardGui")
             esp.Adornee = player.Character.Head
-            esp.Size = UDim2.new(0, 100, 0, 50)
-            esp.StudsOffset = Vector3.new(0, 2, 0)
+            esp.Size = UDim2.new(0, 50, 0, 20) -- Ukuran ESP dikecilin
+            esp.StudsOffset = Vector3.new(0, 1.5, 0) -- Posisinya lebih pas
             esp.AlwaysOnTop = true
             esp.Parent = player.Character.Head
 
@@ -171,8 +170,9 @@ local function createESP(player)
             label.BackgroundTransparency = 1
             label.Text = player.Name
             label.TextColor3 = Color3.fromRGB(255, 0, 0)
-            label.TextSize = 20
+            label.TextSize = 14
             label.TextStrokeTransparency = 0.5
+            label.TextScaled = true
         end
     end
 
