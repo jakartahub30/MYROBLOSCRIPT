@@ -21,7 +21,7 @@ TitleBar.Parent = MainFrame
 TitleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 TitleBar.Size = UDim2.new(1, 0, 0, 30)
 TitleBar.Font = Enum.Font.SourceSansBold
-TitleBar.Text = "JAKARTA HUB - RIP_KIMPOS"
+TitleBar.Text = "JAKARTA HUB - RIP_KOMPOS"
 TitleBar.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleBar.TextSize = 18
 
