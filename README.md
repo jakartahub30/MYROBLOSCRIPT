@@ -43,7 +43,8 @@ local toggles = {
     Invisible = false,
     JumpPower = false,
     InfiniteJump = false,
-    NoClip = false
+    NoClip = false,
+    Teleport = false
 }
 
 local function toggleGui()
@@ -79,11 +80,13 @@ CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseButton.TextSize = 20
 CloseButton.MouseButton1Click:Connect(toggleGui)
 
+-- ✅ Super Speed
 createButton("Super Speed", function(state)
     local player = game.Players.LocalPlayer
     player.Character.Humanoid.WalkSpeed = state and 500 or 16
 end)
 
+-- ✅ Invisible
 createButton("Invisible", function(state)
     local player = game.Players.LocalPlayer
     for _, part in pairs(player.Character:GetChildren()) do
@@ -96,11 +99,13 @@ createButton("Invisible", function(state)
     end
 end)
 
+-- ✅ Jump Power
 createButton("Jump Power", function(state)
     local player = game.Players.LocalPlayer
     player.Character.Humanoid.JumpPower = state and 150 or 50
 end)
 
+-- ✅ Infinite Jump
 game:GetService("UserInputService").JumpRequest:Connect(function()
     if toggles.InfiniteJump then
         game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
@@ -110,6 +115,7 @@ createButton("Infinite Jump", function(state)
     toggles.InfiniteJump = state
 end)
 
+-- ✅ NoClip
 game:GetService("RunService").Stepped:Connect(function()
     if toggles.NoClip then
         for _, part in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
@@ -123,4 +129,30 @@ createButton("NoClip", function(state)
     toggles.NoClip = state
 end)
 
+-- ✅ Teleport ke pemain lain
+local function createTeleportButtons()
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer then
+            createButton("Teleport ke " .. player.Name, function()
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
+            end)
+        end
+    end
+end
+
+createTeleportButtons()
+
 LogoButton.MouseButton1Click:Connect(toggleGui)
+
+game.Players.PlayerAdded:Connect(function()
+    createTeleportButtons()
+end)
+
+game.Players.PlayerRemoving:Connect(function()
+    for _, button in pairs(ScrollingFrame:GetChildren()) do
+        if button:IsA("TextButton") and string.find(button.Text, "Teleport ke") then
+            button:Destroy()
+        end
+    end
+    createTeleportButtons()
+end)
