@@ -1,6 +1,7 @@
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local UIListLayout = Instance.new("UIListLayout")
+local LogoButton = Instance.new("ImageButton")
 
 ScreenGui.Name = "JakartaScript"
 ScreenGui.Parent = game.CoreGui
@@ -17,58 +18,125 @@ UIListLayout.Parent = MainFrame
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 5)
 
+LogoButton.Name = "LogoButton"
+LogoButton.Parent = ScreenGui
+LogoButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+LogoButton.Position = UDim2.new(0, 10, 0, 10)
+LogoButton.Size = UDim2.new(0, 50, 0, 50)
+LogoButton.Image = "rbxassetid://6680749747" -- Logo Skull
+LogoButton.Visible = false
+
+local isVisible = true
+local toggles = {
+    Speed = false,
+    Invisible = false,
+    JumpPower = false,
+    InfiniteJump = false,
+    NoClip = false,
+    GodMode = false,
+    Aimlock = false,
+    ESP = false,
+    Gravity = false
+}
+
+local function toggleGui()
+    isVisible = not isVisible
+    MainFrame.Visible = isVisible
+    LogoButton.Visible = not isVisible
+end
+
 local function createButton(name, callback)
     local Button = Instance.new("TextButton")
     Button.Parent = MainFrame
     Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     Button.Size = UDim2.new(1, 0, 0, 30)
     Button.Font = Enum.Font.SourceSans
-    Button.Text = name
+    Button.Text = name .. " [OFF]"
     Button.TextColor3 = Color3.fromRGB(255, 255, 255)
     Button.TextSize = 20
-    Button.MouseButton1Click:Connect(callback)
+    Button.MouseButton1Click:Connect(function()
+        toggles[name] = not toggles[name]
+        Button.Text = name .. (toggles[name] and " [ON]" or " [OFF]")
+        callback(toggles[name])
+    end)
 end
 
-createButton("Set Speed", function()
+-- 🔥 Super Speed
+createButton("Super Speed", function(state)
     local player = game.Players.LocalPlayer
-    player.Character.Humanoid.WalkSpeed = 100
+    player.Character.Humanoid.WalkSpeed = state and 500 or 16
 end)
 
-createButton("Invisible", function()
+-- 😎 Invisible
+createButton("Invisible", function(state)
     local player = game.Players.LocalPlayer
     for _, part in pairs(player.Character:GetChildren()) do
         if part:IsA("BasePart") then
-            part.Transparency = 1
+            part.Transparency = state and 1 or 0
             if part:FindFirstChild("face") then
-                part.face.Transparency = 1
+                part.face.Transparency = state and 1 or 0
             end
         end
     end
 end)
 
-createButton("Set JumpPower", function()
+-- 🚀 Jump Power
+createButton("Jump Power", function(state)
     local player = game.Players.LocalPlayer
-    player.Character.Humanoid.JumpPower = 150
+    player.Character.Humanoid.JumpPower = state and 150 or 50
 end)
 
-local InfiniteJump = false
-createButton("Toggle Infinite Jump", function()
-    InfiniteJump = not InfiniteJump
+-- 🦸 God Mode
+createButton("God Mode", function(state)
+    local player = game.Players.LocalPlayer
+    player.Character.Humanoid.MaxHealth = state and math.huge or 100
+    player.Character.Humanoid.Health = state and math.huge or player.Character.Humanoid.MaxHealth
 end)
 
-game:GetService("UserInputService").JumpRequest:Connect(function()
-    if InfiniteJump then
-        game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+-- 🎯 Aimlock
+local camera = game.Workspace.CurrentCamera
+local target = nil
+
+createButton("Aimlock", function(state)
+    target = state and game.Players:GetPlayers()[2] or nil
+end)
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+        camera.CFrame = CFrame.new(camera.CFrame.Position, target.Character.HumanoidRootPart.Position)
     end
 end)
 
-local NoClip = false
-createButton("Toggle NoClip", function()
-    NoClip = not NoClip
+-- 🌠 ESP
+createButton("ESP", function(state)
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer and player.Character then
+            local highlight = player.Character:FindFirstChild("Highlight") or Instance.new("Highlight")
+            highlight.Parent = player.Character
+            highlight.FillColor = Color3.fromRGB(255, 0, 0)
+            highlight.Enabled = state
+        end
+    end
 end)
 
+-- 🚀 Gravity Control
+createButton("Gravity", function(state)
+    workspace.Gravity = state and 20 or 196.2
+end)
+
+-- 😆 Infinite Jump
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if toggles.InfiniteJump then
+        game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+createButton("Infinite Jump", function(state)
+    toggles.InfiniteJump = state
+end)
+
+-- 😎 NoClip
 game:GetService("RunService").Stepped:Connect(function()
-    if NoClip then
+    if toggles.NoClip then
         for _, part in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
             if part:IsA("BasePart") and part.CanCollide == true then
                 part.CanCollide = false
@@ -76,16 +144,11 @@ game:GetService("RunService").Stepped:Connect(function()
         end
     end
 end)
-
-createButton("Teleport to Player", function()
-    local targetPlayer = "NamaPlayer"
-    local player = game.Players.LocalPlayer
-    local target = game.Players:FindFirstChild(targetPlayer)
-    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-        player.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame
-    end
+createButton("NoClip", function(state)
+    toggles.NoClip = state
 end)
 
+-- ❌ Tombol Tutup
 local CloseButton = Instance.new("TextButton")
 CloseButton.Parent = MainFrame
 CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
@@ -95,6 +158,6 @@ CloseButton.Font = Enum.Font.SourceSansBold
 CloseButton.Text = "X"
 CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseButton.TextSize = 20
-CloseButton.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
+CloseButton.MouseButton1Click:Connect(toggleGui)
+
+LogoButton.MouseButton1Click:Connect(toggleGui)
