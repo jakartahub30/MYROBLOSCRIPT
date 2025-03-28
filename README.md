@@ -1,127 +1,100 @@
-local player = game.Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local UIListLayout = Instance.new("UIListLayout")
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "MainGui"
-screenGui.Parent = playerGui
+ScreenGui.Name = "JakartaScript"
+ScreenGui.Parent = game.CoreGui
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 180)
-frame.Position = UDim2.new(0.5, -100, 0.5, -90)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BorderSizePixel = 0
-frame.Parent = screenGui
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MainFrame.Size = UDim2.new(0, 250, 0, 300)
+MainFrame.Position = UDim2.new(0.5, -125, 0.5, -150)
+MainFrame.Active = true
+MainFrame.Draggable = true
 
-local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0, 10)
-uiCorner.Parent = frame
+UIListLayout.Parent = MainFrame
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 5)
 
-local flyActive = false
-local flySpeed = 50
-local connection
-
-local userInput = game:GetService("UserInputService")
-local runService = game:GetService("RunService")
-
-local function startFlying()
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    
-    local bodyGyro = Instance.new("BodyGyro")
-    bodyGyro.CFrame = humanoidRootPart.CFrame
-    bodyGyro.Parent = humanoidRootPart
-    
-    local bodyVelocity = Instance.new("BodyVelocity")
-    bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-    bodyVelocity.Parent = humanoidRootPart
-    
-    connection = runService.RenderStepped:Connect(function()
-        local camera = workspace.CurrentCamera
-        local moveDirection = Vector3.zero
-        
-        if userInput:IsKeyDown(Enum.KeyCode.W) then
-            moveDirection = moveDirection + camera.CFrame.LookVector
-        end
-        if userInput:IsKeyDown(Enum.KeyCode.S) then
-            moveDirection = moveDirection - camera.CFrame.LookVector
-        end
-        if userInput:IsKeyDown(Enum.KeyCode.A) then
-            moveDirection = moveDirection - camera.CFrame.RightVector
-        end
-        if userInput:IsKeyDown(Enum.KeyCode.D) then
-            moveDirection = moveDirection + camera.CFrame.RightVector
-        end
-        if userInput:IsKeyDown(Enum.KeyCode.Space) then
-            moveDirection = moveDirection + Vector3.new(0, 1, 0)
-        end
-        if userInput:IsKeyDown(Enum.KeyCode.LeftShift) then
-            moveDirection = moveDirection - Vector3.new(0, 1, 0)
-        end
-
-        if moveDirection.Magnitude > 0 then
-            bodyVelocity.Velocity = moveDirection.Unit * flySpeed
-        else
-            bodyVelocity.Velocity = Vector3.zero
-        end
-
-        bodyGyro.CFrame = camera.CFrame
-    end)
+local function createButton(name, callback)
+    local Button = Instance.new("TextButton")
+    Button.Parent = MainFrame
+    Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Button.Size = UDim2.new(1, 0, 0, 30)
+    Button.Font = Enum.Font.SourceSans
+    Button.Text = name
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.TextSize = 20
+    Button.MouseButton1Click:Connect(callback)
 end
 
-local function stopFlying()
-    if connection then connection:Disconnect() end
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-
-    for _, v in pairs(humanoidRootPart:GetChildren()) do
-        if v:IsA("BodyGyro") or v:IsA("BodyVelocity") then
-            v:Destroy()
-        end
-    end
-end
-
-local function createToggleButton(name, position, onToggle)
-    local toggle = Instance.new("TextButton")
-    toggle.Size = UDim2.new(0, 120, 0, 40)
-    toggle.Position = UDim2.new(0, position.X, 0, position.Y)
-    toggle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toggle.Font = Enum.Font.SourceSansBold
-    toggle.TextSize = 20
-    toggle.Text = name .. " [OFF]"
-    toggle.Parent = frame
-    
-    local isActive = false
-    
-    toggle.MouseButton1Click:Connect(function()
-        isActive = not isActive
-        toggle.BackgroundColor3 = isActive and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(100, 100, 100)
-        toggle.Text = name .. (isActive and " [ON]" or " [OFF]")
-        onToggle(isActive)
-    end)
-end
-
-createToggleButton("Fly", Vector2.new(40, 10), function(isActive)
-    flyActive = isActive
-    if flyActive then
-        startFlying()
-    else
-        stopFlying()
-    end
+createButton("Set Speed", function()
+    local player = game.Players.LocalPlayer
+    player.Character.Humanoid.WalkSpeed = 100
 end)
 
-createToggleButton("Speed", Vector2.new(40, 60), function(isActive)
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoid = character:WaitForChild("Humanoid")
-    humanoid.WalkSpeed = isActive and 50 or 16
-end)
-
-createToggleButton("Invisible", Vector2.new(40, 110), function(isActive)
-    local character = player.Character or player.CharacterAdded:Wait()
-    for _, part in pairs(character:GetChildren()) do
+createButton("Invisible", function()
+    local player = game.Players.LocalPlayer
+    for _, part in pairs(player.Character:GetChildren()) do
         if part:IsA("BasePart") then
-            part.Transparency = isActive and 1 or 0
-            part.CanCollide = not isActive
+            part.Transparency = 1
+            if part:FindFirstChild("face") then
+                part.face.Transparency = 1
+            end
         end
     end
+end)
+
+createButton("Set JumpPower", function()
+    local player = game.Players.LocalPlayer
+    player.Character.Humanoid.JumpPower = 150
+end)
+
+local InfiniteJump = false
+createButton("Toggle Infinite Jump", function()
+    InfiniteJump = not InfiniteJump
+end)
+
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if InfiniteJump then
+        game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+
+local NoClip = false
+createButton("Toggle NoClip", function()
+    NoClip = not NoClip
+end)
+
+game:GetService("RunService").Stepped:Connect(function()
+    if NoClip then
+        for _, part in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+            if part:IsA("BasePart") and part.CanCollide == true then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+createButton("Teleport to Player", function()
+    local targetPlayer = "NamaPlayer"
+    local player = game.Players.LocalPlayer
+    local target = game.Players:FindFirstChild(targetPlayer)
+    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+        player.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame
+    end
+end)
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Parent = MainFrame
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -30, 0, 0)
+CloseButton.Font = Enum.Font.SourceSansBold
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 20
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
 end)
